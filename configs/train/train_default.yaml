@@ -1,0 +1,8 @@
+# Training settings
+n_epochs: 1000
+batch_size: 128
+lr: 0.0001
+clip_grad: null          # float, null to disable
+save_model: True
+num_workers: 0
+weight_decay: 1e-12

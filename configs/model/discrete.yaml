@@ -1,0 +1,21 @@
+# Model settings
+transition: 'marginal'                          # uniform or marginal
+diffusion_steps: 500
+diffusion_noise_schedule: 'cosine'              # 'cosine', 'polynomial_2'
+n_layers: 4
+
+extra_features: 'all'        # 'all', 'cycles', 'eigenvalues' or null
+
+# Do not set hidden_mlp_E, dim_ffE too high, computing large tensors on the edges is costly
+hidden_mlp_dims: {'X': 256, 'E': 128, 'y': 128}
+
+# The dimensions should satisfy dx % n_head == 0.
+# dv = dimension of the homological feature vector mu_G0 (= L * S of the persistence landscape, 4 * 16 = 64)
+hidden_dims: {'dx': 256, 'de': 64, 'dy': 64, 'dv': 64, 'n_head': 8, 'dim_ffX': 256, 'dim_ffE': 128, 'dim_ffy': 128}
+
+# Training objective (Sec. 4.3): L = L_CE^V + alpha_1 * L_CE^E + alpha_2 * L_PDM
+#   alpha_1 = lambda_train[0]  (edge cross-entropy weight)
+#   alpha_2 = use_pdm_loss     (PDM loss weight; 0 disables the PDM loss)
+# Per-dataset values from Table 6 are set in configs/experiment/.
+lambda_train: [1, 0]         # [alpha_1, y weight (unused, keep 0)]
+use_pdm_loss: 0.001          # alpha_2

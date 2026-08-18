@@ -1,0 +1,27 @@
+# experiment outputs
+outputs/
+checkpoints/
+*.ckpt
+wandb/
+
+# datasets and preprocessing caches (auto-downloaded; see README)
+# ego_small.pkl is kept in the repo since it has no download source
+data/*
+!data/ego_small/
+data/ego_small/*
+!data/ego_small/ego_small.pkl
+
+# compiled orca binary (compile locally: see README) and its temp files
+src/analysis/orca/orca
+src/analysis/orca/tmp_*.txt
+
+# python
+__pycache__/
+*.pyc
+*.egg-info/
+.hydra/
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
