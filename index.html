@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TAGG: Topology-aware Graph Diffusion Model with Persistent Homology</title>
+<meta name="description" content="TAGG (NeurIPS 2025): a topology-aware graph diffusion model that generates graphs preserving homological structure via a Persistence Diagram Matching loss and a Topology-aware Attention Module.">
+<meta property="og:title" content="TAGG: Topology-aware Graph Diffusion Model with Persistent Homology">
+<meta property="og:description" content="NeurIPS 2025 — Graph generation that preserves connected components and loops via persistent homology.">
+<meta property="og:image" content="static/images/fig1_overview.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#191428;
+  --ink-soft:#4b4560;
+  --purple:#7b2d8e;
+  --purple-deep:#4b1d59;
+  --gold:#e8a913;
+  --paper:#fdfcfa;
+  --panel:#f5f2ee;
+  --line:#e3ddd4;
+  --blue-tint:#eef4fb;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  color:var(--ink);
+  background:var(--paper);
+  line-height:1.65;
+  font-size:16.5px;
+}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+.wrap-wide{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* ---------- Hero ---------- */
+header{
+  position:relative;
+  padding:84px 0 56px;
+  overflow:hidden;
+  border-bottom:1px solid var(--line);
+}
+.landscape-bg{
+  position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.55;
+}
+.hero-inner{position:relative;z-index:1;text-align:center}
+.venue{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:.78rem;letter-spacing:.14em;
+  color:var(--purple-deep);
+  border:1px solid var(--purple);
+  border-radius:999px;
+  padding:6px 16px;
+  margin-bottom:26px;
+  background:#fff;
+}
+h1{
+  font-family:'Space Grotesk',sans-serif;
+  font-weight:700;
+  font-size:clamp(1.8rem,4.6vw,3rem);
+  line-height:1.16;
+  letter-spacing:-.015em;
+  max-width:860px;
+  margin:0 auto 8px;
+}
+h1 .hl{color:var(--purple)}
+.authors{margin-top:22px;font-size:1.05rem;color:var(--ink)}
+.authors a{color:var(--purple);text-decoration:none;border-bottom:1px solid transparent}
+.authors a:hover{border-bottom-color:var(--purple)}
+.authors sup{font-size:.7em;color:var(--ink-soft)}
+.affils{margin-top:8px;color:var(--ink-soft);font-size:.95rem}
+.equal-note{margin-top:6px;color:var(--ink-soft);font-size:.83rem}
+.btn-row{margin-top:30px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.95rem;
+  padding:11px 22px;border-radius:999px;text-decoration:none;
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.btn-dark{background:var(--ink);color:#fff}
+.btn-dark:hover{box-shadow:0 6px 18px rgba(25,20,40,.25)}
+.btn-line{background:#fff;color:var(--ink);border:1.5px solid var(--ink)}
+.btn svg{width:17px;height:17px;fill:currentColor}
+
+/* ---------- Barcode divider (signature) ---------- */
+.barcode{
+  display:flex;flex-direction:column;gap:5px;
+  width:120px;margin:0 0 18px;
+}
+.barcode span{height:3px;border-radius:2px;background:var(--purple)}
+.barcode span:nth-child(1){width:100%}
+.barcode span:nth-child(2){width:62%;background:var(--gold)}
+.barcode span:nth-child(3){width:34%}
+.section-label{
+  font-family:'JetBrains Mono',monospace;
+  font-size:.75rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--ink-soft);margin-bottom:10px;
+}
+h2{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:clamp(1.4rem,3vw,1.9rem);letter-spacing:-.01em;
+  margin-bottom:18px;
+}
+section{padding:64px 0}
+section + section{border-top:1px solid var(--line)}
+
+/* ---------- Teaser ---------- */
+.teaser{padding:52px 0 8px;text-align:center}
+.teaser img{width:100%;max-width:980px;height:auto;border-radius:10px}
+figcaption{
+  margin:14px auto 0;max-width:820px;
+  font-size:.9rem;color:var(--ink-soft);text-align:left;
+}
+figcaption b{color:var(--ink)}
+
+/* ---------- Abstract ---------- */
+.abstract p{max-width:820px}
+
+/* ---------- Method cards ---------- */
+.method-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:26px}
+.card{
+  background:var(--panel);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:26px 26px 22px;
+}
+.card h3{
+  font-family:'Space Grotesk',sans-serif;font-size:1.12rem;font-weight:600;
+  margin-bottom:10px;
+}
+.card .tag{
+  font-family:'JetBrains Mono',monospace;font-size:.72rem;letter-spacing:.1em;
+  color:var(--purple-deep);display:block;margin-bottom:8px;
+}
+.card p{font-size:.95rem;color:var(--ink-soft)}
+.tam-fig{margin-top:34px;text-align:center}
+.tam-fig img{width:100%;max-width:640px;height:auto;background:#fff;border:1px solid var(--line);border-radius:10px;padding:14px}
+
+/* ---------- Results ---------- */
+.result-block{margin-top:30px;text-align:center}
+.result-block img{width:100%;max-width:980px;height:auto;border-radius:10px}
+.stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:18px;
+  margin:38px 0 6px;
+}
+.stat{
+  background:var(--blue-tint);
+  border:1px solid #d8e4f2;
+  border-radius:14px;padding:22px 20px;text-align:center;
+}
+.stat .num{
+  font-family:'Space Grotesk',sans-serif;font-weight:700;
+  font-size:1.9rem;color:var(--purple-deep);line-height:1.1;
+}
+.stat .num small{font-size:1rem;font-weight:600;color:var(--ink-soft)}
+.stat .lab{margin-top:8px;font-size:.85rem;color:var(--ink-soft)}
+
+/* ---------- BibTeX ---------- */
+.bib-box{position:relative;margin-top:20px}
+pre{
+  font-family:'JetBrains Mono',monospace;font-size:.85rem;line-height:1.6;
+  background:var(--ink);color:#efeaf5;
+  border-radius:12px;padding:24px 26px;overflow-x:auto;
+}
+.copy-btn{
+  position:absolute;top:12px;right:12px;
+  font-family:'Space Grotesk',sans-serif;font-size:.8rem;font-weight:600;
+  background:#fff;color:var(--ink);border:none;border-radius:8px;
+  padding:7px 14px;cursor:pointer;
+}
+.copy-btn:hover{background:var(--gold)}
+.copy-btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+/* ---------- Footer ---------- */
+footer{
+  border-top:1px solid var(--line);
+  padding:36px 0 48px;
+  font-size:.85rem;color:var(--ink-soft);text-align:center;
+}
+footer a{color:var(--purple);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+@media (max-width:720px){
+  .method-grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:1fr}
+  header{padding:56px 0 44px}
+  section{padding:48px 0}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  .btn{transition:none}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <!-- persistence landscape tent functions, echoing Fig. 1 of the paper -->
+  <svg class="landscape-bg" viewBox="0 0 1200 420" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+    <polyline points="0,420 190,205 380,420" fill="none" stroke="#7b2d8e" stroke-opacity=".14" stroke-width="2.5"/>
+    <polyline points="220,420 430,150 640,420" fill="none" stroke="#e8a913" stroke-opacity=".18" stroke-width="2.5"/>
+    <polyline points="470,420 660,235 850,420" fill="none" stroke="#7b2d8e" stroke-opacity=".12" stroke-width="2.5"/>
+    <polyline points="700,420 930,120 1160,420" fill="none" stroke="#2f6db0" stroke-opacity=".13" stroke-width="2.5"/>
+    <polyline points="920,420 1080,250 1240,420" fill="none" stroke="#e8a913" stroke-opacity=".14" stroke-width="2.5"/>
+  </svg>
+
+  <div class="wrap hero-inner">
+    <span class="venue">NeurIPS 2025</span>
+    <h1>Topology-aware Graph Diffusion Model<br>with <span class="hl">Persistent Homology</span></h1>
+
+    <p class="authors">
+      <a href="https://sites.google.com/view/joonhyukpark/about">Joonhyuk Park</a><sup>1*</sup> ·
+      Donghyun Lee<sup>2*</sup> ·
+      Yujee Song<sup>2</sup> ·
+      Guorong Wu<sup>3</sup> ·
+      Won Hwa Kim<sup>1</sup>
+    </p>
+    <p class="affils"><sup>1</sup>POSTECH &nbsp;&nbsp; <sup>2</sup>Samsung Electronics &nbsp;&nbsp; <sup>3</sup>UNC-Chapel Hill</p>
+    <p class="equal-note">*Equal contribution</p>
+
+    <div class="btn-row">
+      <a class="btn btn-dark" href="https://openreview.net/pdf?id=sye27MizdM">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm4 18H6V4h7v5h5v11z"/></svg>
+        Paper
+      </a>
+      <a class="btn btn-dark" href="https://github.com/pjh1023/TAGG">
+        <svg viewBox="0 0 24 24"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.7 5.39-5.27 5.68.42.36.78 1.06.78 2.15v3.19c0 .3.21.66.8.55A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z"/></svg>
+        Code
+      </a>
+      <a class="btn btn-line" href="#bibtex">
+        <svg viewBox="0 0 24 24"><path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6zm2 5h8v2H8V7zm0 4h8v2H8v-2zm0 4h5v2H8v-2z"/></svg>
+        BibTeX
+      </a>
+    </div>
+  </div>
+</header>
+
+<figure class="teaser wrap-wide">
+  <img src="static/images/fig1_overview.png" alt="Overview of TAGG training: a noisy graph and the persistence-landscape embedding of the original graph are fed to the topology-aware denoising network, trained with cross-entropy and Persistence Diagram Matching losses.">
+  <figcaption><b>Overview of TAGG.</b> The denoising network takes a noisy graph G<sub>t</sub> and the persistence-landscape embedding &mu;<sub>G&#8320;</sub> of the original graph, and is trained with a cross-entropy loss over nodes and edges together with a <b>Persistence Diagram Matching (PDM) loss</b> that aligns the persistence diagrams of the original and estimated graphs.</figcaption>
+</figure>
+
+<section class="abstract">
+  <div class="wrap">
+    <div class="barcode" aria-hidden="true"><span></span><span></span><span></span></div>
+    <p class="section-label">Abstract</p>
+    <h2>Generating graphs that keep their shape</h2>
+    <p>
+      Existing graph generation methods approximate the joint distribution of nodes and edges but often overlook
+      topological properties such as connected components and loops, failing to reproduce global structure.
+      We propose <b>TAGG</b>, a <b>T</b>opology-<b>A</b>ware diffusion-based <b>G</b>raph <b>G</b>eneration framework
+      that samples graphs closely resembling the homological characteristics of the reference graphs via persistent homology.
+      TAGG builds on two components: a <b>Persistence Diagram Matching (PDM) loss</b> that enforces high topological
+      fidelity, and a <b>Topology-aware Attention Module (TAM)</b> that injects homological features of the original
+      graphs into the denoising network. Across standard graph benchmarks, TAGG achieves strong generation performance
+      while aligning far more closely with the topological feature distributions of real graphs — and its application to
+      brain networks from ADNI demonstrates its potential for complex real-world graphs.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="barcode" aria-hidden="true"><span></span><span></span><span></span></div>
+    <p class="section-label">Method</p>
+    <h2>Two topology-aware components</h2>
+    <div class="method-grid">
+      <div class="card">
+        <span class="tag">LOSS &nbsp;/&nbsp; &Lscr;<sub>PDM</sub></span>
+        <h3>Persistence Diagram Matching</h3>
+        <p>
+          Persistence diagrams of the original graph and the model's estimate are compared with the
+          1-Wasserstein distance, computed per homology dimension with diagonal padding for a proper bijection.
+          Minimizing this discrepancy regularizes generation toward graphs whose connected components and loops
+          match the reference — and plugging &Lscr;<sub>PDM</sub> into existing baselines improves their
+          average MMD by 1.09–3.29&times;.
+        </p>
+      </div>
+      <div class="card">
+        <span class="tag">ARCHITECTURE &nbsp;/&nbsp; TAM</span>
+        <h3>Topology-aware Attention Module</h3>
+        <p>
+          The persistence landscape of the original graph is embedded and added as a <b>global attention bias</b>,
+          complementing edge embeddings that capture only local structure. Iterating TAM inside the denoising
+          network lets the model estimate topology-aware node and edge attributes — with the homological feature
+          vector pre-computed once, adding minimal training overhead.
+        </p>
+      </div>
+    </div>
+    <figure class="tam-fig">
+      <img src="static/images/fig2_tam.png" alt="Diagram of the Topology-aware Attention Module: node, edge, and homological embeddings combine into a topology-aware attention score.">
+      <figcaption style="text-align:center"><b>TAM.</b> The homological embedding &Hscr;<sub>G&#8320;</sub> biases the attention score, injecting global structure.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap-wide">
+    <div class="wrap" style="padding:0">
+      <div class="barcode" aria-hidden="true"><span></span><span></span><span></span></div>
+      <p class="section-label">Results</p>
+      <h2>Brain networks that preserve global structure</h2>
+      <p style="max-width:820px">
+        On structural brain connectivity from <b>ADNI</b> (844 graphs, 160 ROIs), TAGG generates networks that keep
+        the hemispheric symmetry, sparsity, and the subtle inter-hemisphere connections that determine the number of
+        connected components — properties baselines consistently miss.
+      </p>
+    </div>
+
+    <div class="result-block">
+      <img src="static/images/fig3_brain.png" alt="Averaged brain networks generated by five methods and the test dataset; TAGG best preserves sparsity and inter-hemisphere connections.">
+      <figcaption><b>Averaged brain network of 50 generated samples.</b> Red boxes zoom into inter-hemisphere connections; TAGG (e) closely matches the test dataset (f) while baselines over- or under-connect.</figcaption>
+    </div>
+
+    <div class="wrap" style="padding:0">
+      <div class="stats">
+        <div class="stat">
+          <div class="num">2.92 <small>/ 2.98</small></div>
+          <div class="lab">Avg. Betti number &beta;&#772;<sub>0</sub> — TAGG vs. real brain networks (baselines: ~5–6)</div>
+        </div>
+        <div class="stat">
+          <div class="num">229.96 <small>/ 225.64</small></div>
+          <div class="lab">Avg. Betti number &beta;&#772;<sub>1</sub> — TAGG vs. real brain networks</div>
+        </div>
+        <div class="stat">
+          <div class="num">&minus;30.3<small>%</small></div>
+          <div class="lab">ATOL KL-divergence vs. the second-best method (DiGress) on ADNI</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-block">
+      <img src="static/images/fig4_atol.png" alt="ATOL visualization of homological features: TAGG-generated samples overlap the test distribution far more than baselines.">
+      <figcaption><b>Homological alignment (ATOL).</b> Test (blue) vs. generated (pink) samples on the ADNI dataset — TAGG (e) shows the highest resemblance, with best scores on ATOL, Persistence Image, and Curvature Filtration metrics.</figcaption>
+    </div>
+  </div>
+</section>
+
+<section id="bibtex">
+  <div class="wrap">
+    <div class="barcode" aria-hidden="true"><span></span><span></span><span></span></div>
+    <p class="section-label">Citation</p>
+    <h2>BibTeX</h2>
+    <div class="bib-box">
+      <button class="copy-btn" onclick="copyBib(this)">Copy</button>
+<pre id="bib">@inproceedings{park2025tagg,
+  title     = {Topology-aware Graph Diffusion Model with Persistent Homology},
+  author    = {Park, Joonhyuk and Lee, Donghyun and Song, Yujee and Wu, Guorong and Kim, Won Hwa},
+  booktitle = {Advances in Neural Information Processing Systems (NeurIPS)},
+  year      = {2025}
+}</pre>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Website of <a href="https://github.com/pjh1023/TAGG">TAGG</a> (NeurIPS 2025) · maintained by <a href="https://sites.google.com/view/joonhyukpark/about">Joonhyuk Park</a></p>
+  </div>
+</footer>
+
+<script>
+function copyBib(btn){
+  const text = document.getElementById('bib').innerText;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent = 'Copied!';
+    setTimeout(()=>{ btn.textContent = 'Copy'; }, 1600);
+  });
+}
+</script>
+</body>
+</html>
